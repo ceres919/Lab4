@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Notepad.Views.Pages.NoteView">
+	<UserControl.Styles>
+		<Style Selector="Button">
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
+		</Style>
+	</UserControl.Styles>
+	
+	<Grid RowDefinitions="7*,auto,auto">
+		<TextBox Name="contentTextBox" Text="{Binding TextFile}" Grid.Row="0" AcceptsReturn="True" AcceptsTab="True"/>
+		<Button Name="openButton" Grid.Row="1" Content="Открыть" Command="{Binding $parent[Window].DataContext.OpenCommand}"/>
+		<Button Name="saveButton" Grid.Row="2" Content="Сохранить" Command="{Binding $parent[Window].DataContext.SaveCommand}"/>
+	</Grid>
+</UserControl>

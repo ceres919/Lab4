@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:Notepad.ViewModels"
+			 xmlns:local="clr-namespace:Notepad.Models"
+			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+			 xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Notepad.Views.Pages.ExplorerView">
+
+	<UserControl.Resources>
+		<vm:BitmapAssetValueConverter x:Key="convImage"/>
+	</UserControl.Resources>
+
+	<UserControl.Styles>
+		<Style Selector="Button">
+			<Setter Property="HorizontalAlignment" Value="Stretch"/>
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+		</Style>
+		<Style Selector="Image.h1">
+			<Setter Property="Width" Value="35"/>
+			<Setter Property="Height" Value="35"/>
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+		</Style>
+		<Style Selector="TextBlock">
+			<Setter Property="HorizontalAlignment" Value="Center"/>
+			<Setter Property="VerticalAlignment" Value="Center"/>
+			<Setter Property="TextAlignment" Value="Left"/>
+			<Setter Property="Margin" Value="10,0,0,0"/>
+		</Style>
+	</UserControl.Styles>
+
+	<Grid RowDefinitions="7*,auto,auto" ColumnDefinitions="*,*">
+		<ListBox Name="fileListBox" Grid.Column="0"  Grid.ColumnSpan="2"
+					Items="{Binding DirectoriesAndFilesCollection}"
+				SelectedItem="{Binding SelectedEntity}">
+
+			<i:Interaction.Behaviors>
+				<ia:EventTriggerBehavior EventName="DoubleTapped">
+					<ia:InvokeCommandAction
+						Command="{Binding OpenCommand}"
+						CommandParameter="{Binding SelectedEntity}"/>
+				</ia:EventTriggerBehavior>
+			</i:Interaction.Behaviors>
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<Grid ColumnDefinitions="auto,auto" Background="Transparent">
+						<Image Grid.Column="0" Classes="h1"
+								Source="{Binding Icon, Converter={StaticResource convImage}}"/>
+						<TextBlock Grid.Column="1" Text="{Binding Name}"/>
+					</Grid>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+
+		</ListBox>
+
+		<TextBox Name="fileTextBox" Text="{Binding FilePath}" Grid.Row="1"  Grid.ColumnSpan="2"/>
+		<Button Name="okButton" Grid.Row="2" Grid.Column="0" Content="Открыть" Command="{Binding OkCommand}" CommandParameter="{Binding SelectedEntity}"/>
+		<!--contet binding -->
+		<Button Name="cancelButton" Grid.Row="2" Grid.Column="1" Content="Отмена" Command="{Binding CancelCommand}"/>
+	</Grid>
+	
+</UserControl>
