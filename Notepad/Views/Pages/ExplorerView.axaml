@@ -40,7 +40,7 @@
 			<i:Interaction.Behaviors>
 				<ia:EventTriggerBehavior EventName="DoubleTapped">
 					<ia:InvokeCommandAction
-						Command="{Binding OpenCommand}"
+						Command="{Binding OkCommand}"
 						CommandParameter="{Binding SelectedEntity}"/>
 				</ia:EventTriggerBehavior>
 			</i:Interaction.Behaviors>
@@ -53,12 +53,10 @@
 					</Grid>
 				</DataTemplate>
 			</ListBox.ItemTemplate>
-
 		</ListBox>
 
-		<TextBox Name="fileTextBox" Text="{Binding FilePath}" Grid.Row="1"  Grid.ColumnSpan="2"/>
-		<Button Name="okButton" Grid.Row="2" Grid.Column="0" Content="Открыть" Command="{Binding OkCommand}" CommandParameter="{Binding SelectedEntity}"/>
-		<!--contet binding -->
+		<TextBox Name="fileTextBox" Text="{Binding FileName}" Grid.Row="1"  Grid.ColumnSpan="2"/>
+		<Button Name="okButton" Grid.Row="2" Grid.Column="0" Content="{Binding OkButtonContent}" Command="{Binding OkCommand}" CommandParameter="{Binding SelectedEntity}"/>
 		<Button Name="cancelButton" Grid.Row="2" Grid.Column="1" Content="Отмена" Command="{Binding CancelCommand}"/>
 	</Grid>
 	

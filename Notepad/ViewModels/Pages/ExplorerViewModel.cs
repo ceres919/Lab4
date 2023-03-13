@@ -1,6 +1,6 @@
-﻿using Avalonia.Controls.Shapes;
+﻿using Avalonia.Input;
 using Avalonia.Logging;
-using Notepad.Models.Commands;
+using Microsoft.VisualBasic;
 using Notepad.Models.ExplorerEntities;
 using ReactiveUI;
 using System;
@@ -21,32 +21,43 @@ namespace Notepad.ViewModels.Pages
         
 
         private ObservableCollection<FileAndDirectoryEntityViewModel> directoriesAndFilesCollection = new ObservableCollection<FileAndDirectoryEntityViewModel>();
-        private FileAndDirectoryEntityViewModel selectedEntity;
         
-
-        public string FilePath { get; set; }
-        public string currentText = "";
+        public string? currentText = "";
         public string currentPathName = "";
-        public string CurrentText { get; private set; }
+        public bool savePage;
+        public string FilePath { get; set; }
+        public string? CurrentText { get; private set; }
 
-        public FileAndDirectoryEntityViewModel SelectedEntity
+        public FileAndDirectoryEntityViewModel? selectedEntity;
+        public FileAndDirectoryEntityViewModel? SelectedEntity
         {
             get => selectedEntity;
-            set => this.RaiseAndSetIfChanged(ref selectedEntity, value);
+            set
+            {
+                SelectItem(value);
+                this.RaiseAndSetIfChanged(ref selectedEntity, value);
+            }
         }
-       
-        public ICommand OpenCommand { get; }
+
+        //public ICommand OpenCommand { get; }
 
         public ExplorerViewModel()
         {
-            OpenCommand = new DelegateCommand(Open);
-
+            //OpenCommand = new DelegateCommand(Open);
+            savePage = false;
             FilePath = Directory.GetCurrentDirectory();
             OpenDirectory();
-           //foreach (var d in Directory.GetLogicalDrives())
-           //{
-           //    DirectoriesAndFilesCollection.Add(new DirectoryViewModel(d));
-           //}
+            CancelCommand = ReactiveCommand.Create(() => { });
+            OkCommand = ReactiveCommand.Create<FileAndDirectoryEntityViewModel>(Open);
+
+        }
+
+        public ExplorerViewModel(string? text, bool mode)
+        {
+            CurrentText = text;
+            savePage = mode;
+            FilePath = Directory.GetCurrentDirectory();
+            OpenDirectory();
             CancelCommand = ReactiveCommand.Create(() => { });
             OkCommand = ReactiveCommand.Create<FileAndDirectoryEntityViewModel>(Open);
 
@@ -56,8 +67,7 @@ namespace Notepad.ViewModels.Pages
         {
             DirectoriesAndFilesCollection.Clear();
             var directoryInfo = new DirectoryInfo(FilePath);
-            if (Directory.GetParent(FilePath) != null)
-                DirectoriesAndFilesCollection.Add(new DirectoryViewModel("..", "Assets/back_dir.png"));
+            DirectoriesAndFilesCollection.Add(new DirectoryViewModel("..", "Assets/back_dir.png"));
             foreach (var dir in directoryInfo.GetDirectories())
             {
                 DirectoriesAndFilesCollection.Add(new DirectoryViewModel(dir));
@@ -81,33 +91,94 @@ namespace Notepad.ViewModels.Pages
         {
             if (parameter is DirectoryViewModel directoryViewModel)
             {
-                if(directoryViewModel.FullName is "..")
+                if (directoryViewModel.FullName is "..")
                 {
                     var parentDir = Directory.GetParent(FilePath);
                     if (parentDir != null)
                     {
                         FilePath = parentDir.FullName;
                         OpenDirectory();
-                        
                     }
                     else
                     {
                         OpenRoot();
                     }
-                    
                 }
-                else 
-                { 
+                else
+                {
                     FilePath = directoryViewModel.FullName;
                     OpenDirectory();
                 }
             }
-            if(parameter is FileViewModel fileViewModel) 
-            {
-               CurrentText = File.ReadAllText(fileViewModel.FullName);
+            else 
+            { 
+                if (parameter is FileViewModel fileViewModel)
+                {
+                    if (savePage) 
+                    {
+                        File.WriteAllText(fileViewModel.FullName, CurrentText);
+                        savePage = false;
+                    }
+                    else
+                    {
+                        CurrentText = File.ReadAllText(fileViewModel.FullName);
+                    }
+                }
+                else 
+                {
+                    string path = Path.Combine(FilePath, fileName);
+                    if (File.Exists(path)) 
+                    {
+                        if (savePage)
+                        {
+                            File.WriteAllText(path, CurrentText);
+                            savePage = false;
+                        }
+                        else
+                        {
+                            CurrentText = File.ReadAllText(path);
+                        }
+                    }
+                    else
+                    {
+                        if (savePage)
+                        {
+                            File.WriteAllText(path, CurrentText);
+                            savePage = false;
+                        }
+                    }
+                }
             }
-
         }
+        private void SelectItem(FileAndDirectoryEntityViewModel item)
+        {
+            if (item == null)
+            {
+                OkButtonContent = "Открыть";
+                return;
+            }
+            if (item is FileViewModel)
+            {
+                FileName = item.Name;
+                if(savePage)
+                {
+                    OkButtonContent = "Сохранить";
+                }
+            }
+            else
+            {
+                FileName = "";
+                OkButtonContent = "Открыть";
+            }
+        }
+
+        private string fileName = "";
+        private string okButtonContent = "Открыть";
+        FileAndDirectoryEntityViewModel? selectedItem;
+
+        public string FileName { get => fileName; set => this.RaiseAndSetIfChanged(ref fileName, value); }
+        public string OkButtonContent { get => okButtonContent; set => this.RaiseAndSetIfChanged(ref okButtonContent, value); }
+        public FileAndDirectoryEntityViewModel? SelectedItem { get => selectedItem; set { selectedItem = value; SelectItem(value); } }
         public ObservableCollection<FileAndDirectoryEntityViewModel> DirectoriesAndFilesCollection
         {
             get => directoriesAndFilesCollection;

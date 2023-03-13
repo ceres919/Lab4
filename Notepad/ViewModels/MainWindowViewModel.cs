@@ -27,29 +27,10 @@ namespace Notepad.ViewModels
             OpenCommand = ReactiveCommand.Create(() =>
             {
                 ExplorerViewModel viewModel = new ExplorerViewModel();
-                Observable.Merge(
-                    viewModel.OkCommand,
-                    viewModel.CancelCommand)
-                .Take(1)
-                .Subscribe(todoItem =>
-                {
-                    if (viewModel.CurrentText != null)
-                    {
-                        notepadViewModel.TextFile = viewModel.CurrentText;
-                    }
-
-                    Content = notepadViewModel;
-                });
-
                 Content = viewModel;
-            });
 
-            SaveCommand = ReactiveCommand.Create(() =>
-            {
-                ExplorerViewModel viewModel = new ExplorerViewModel();
-                Observable.Merge(
-                    viewModel.OkCommand,
-                    viewModel.CancelCommand)
+                Observable.AsObservable(
+                    viewModel.OkCommand)
                 .Subscribe(todoItem =>
                 {
                     if (viewModel.CurrentText != null)
@@ -57,11 +38,32 @@ namespace Notepad.ViewModels
                         notepadViewModel.TextFile = viewModel.CurrentText;
                         Content = notepadViewModel;
                     }
-
-                    
                 });
+                Observable.AsObservable(viewModel.CancelCommand)
+                .Subscribe(todoItem =>
+                {
+                    Content = notepadViewModel;
+                });
+            });
 
+            SaveCommand = ReactiveCommand.Create(() =>
+            {
+                ExplorerViewModel viewModel = new ExplorerViewModel(notepadViewModel.TextFile, true);
                 Content = viewModel;
+
+                Observable.AsObservable(viewModel.OkCommand)
+                .Subscribe(todoItem =>
+                {
+                    if (viewModel.savePage == false)
+                    {
+                        Content = notepadViewModel;
+                    }
+                });
+                Observable.AsObservable(viewModel.CancelCommand)
+                .Subscribe(todoItem =>
+                {
+                    Content = notepadViewModel;
+                });
             });
         }
 
@@ -77,55 +79,5 @@ namespace Notepad.ViewModels
                 this.RaiseAndSetIfChanged(ref content, value);
             }
         }
-
-        //private string currentPathName = Directory.GetCurrentDirectory();
-
-        //private ObservableCollection<FileAndDirectoryEntityViewModel> directoriesAndFilesCollection = new ObservableCollection<FileAndDirectoryEntityViewModel>();
-        //private FileAndDirectoryEntityViewModel selectedEntity;
-
-        //public string FilePath { get; set; }
-        //public FileAndDirectoryEntityViewModel SelectedEntity 
-        //{ 
-        //    get => selectedEntity;
-        //    set => this.RaiseAndSetIfChanged(ref selectedEntity, value);
-        //}
-        //public ICommand OpenCommand { get; }
-
-        //public MainWindowViewModel() 
-        //{
-        //    OpenCommand = new DelegateCommand(Open);
-
-        //    foreach (var d in Directory.GetLogicalDrives())//GetFiles(currentPathName)
-        //    {
-        //        DirectoriesAndFilesCollection.Add(new DirectoryViewModel(d));
-        //    }
-        //}
-
-        //public ObservableCollection<FileAndDirectoryEntityViewModel> DirectoriesAndFilesCollection 
-        //{ 
-        //    get => directoriesAndFilesCollection;
-        //    set => this.RaiseAndSetIfChanged(ref directoriesAndFilesCollection, value);
-        //}
-        //private void Open(object parameter)
-        //{
-
-        //    if (parameter is DirectoryViewModel directoryViewModel) 
-        //    {
-        //        //if (directoryViewModel.FullName == "..")
-        //        FilePath = directoryViewModel.FullName;
-        //        DirectoriesAndFilesCollection.Clear();
-        //        var directoryInfo = new DirectoryInfo(FilePath);
-        //        if (Directory.GetParent(FilePath) != null )
-        //            DirectoriesAndFilesCollection.Add(new DirectoryViewModel("..", "Assets/back_dir.png"));
-        //        foreach (var dir in directoryInfo.GetDirectories())
-        //        {
-        //            DirectoriesAndFilesCollection.Add(new DirectoryViewModel(dir));
-        //        }
-        //        foreach (var file in directoryInfo.GetFiles())
-        //        {
-        //            DirectoriesAndFilesCollection.Add(new FileViewModel(file));
-        //        }
-        //    }
-        //}
     }
 }
